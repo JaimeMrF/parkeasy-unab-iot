@@ -1,0 +1,26 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:unabparking:ParkingSlot;1",
+  "@type": "Interface",
+  "displayName": "ParkingSlot UNAB",
+  "comment": "Cubre Dev01-Dev04: slots de parqueo de bicicletas/patinetas con seguro, ocupacion y carga.",
+  "contents": [
+    { "@type": "Telemetry", "name": "lock_state", "displayName": "Estado del seguro", "schema": "string", "comment": "open | closed" },
+    { "@type": "Telemetry", "name": "ocupado", "displayName": "Ocupado", "schema": "boolean" },
+    { "@type": "Telemetry", "name": "temp_slot", "displayName": "Temperatura del slot", "schema": "double", "unit": "degreeCelsius" },
+    { "@type": "Telemetry", "name": "lux", "displayName": "Iluminancia", "schema": "double", "unit": "lux" },
+    { "@type": "Telemetry", "name": "estado_carga", "displayName": "Estado de carga", "schema": "string", "comment": "idle | charging | full | error" },
+    { "@type": "Telemetry", "name": "corriente_a", "displayName": "Corriente de carga", "schema": "double", "unit": "ampere" },
+    { "@type": "Telemetry", "name": "soc_estimado", "displayName": "SoC estimado", "schema": "double", "unit": "percent" },
+    { "@type": "Telemetry", "name": "potencia_w", "displayName": "Potencia de carga", "schema": "double", "unit": "watt" },
+    { "@type": "Telemetry", "name": "temp_conector", "displayName": "Temperatura del conector", "schema": "double", "unit": "degreeCelsius" },
+    { "@type": "Property", "name": "origen_envio", "displayName": "Origen de envio", "schema": "string", "writable": false },
+    { "@type": "Property", "name": "intervalo_muestreo_s", "displayName": "Intervalo de muestreo (s)", "schema": "integer", "writable": true },
+    {
+      "@type": "Command",
+      "name": "toggleLock",
+      "displayName": "Abrir/cerrar seguro",
+      "request": { "name": "estado", "displayName": "Estado deseado", "schema": "string" }
+    }
+  ]
+}

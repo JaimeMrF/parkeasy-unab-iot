@@ -1,0 +1,13 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:unabparking:EnergyPanel;1",
+  "@type": "Interface",
+  "displayName": "Tablero de Energia UNAB",
+  "comment": "Dev08: energia del tablero de la estacion.",
+  "contents": [
+    { "@type": "Telemetry", "name": "kwh", "schema": "double", "unit": "kilowattHour" },
+    { "@type": "Telemetry", "name": "corriente_a", "schema": "double", "unit": "ampere" },
+    { "@type": "Telemetry", "name": "estado_breaker", "schema": "string", "comment": "on | off | fault" },
+    { "@type": "Property", "name": "origen_envio", "schema": "string", "writable": false }
+  ]
+}

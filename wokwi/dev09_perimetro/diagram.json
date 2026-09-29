@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "author": "Grupo Parqueadero UNAB",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp32", "top": 0, "left": 0, "attrs": {} },
+    { "type": "wokwi-pir-motion-sensor", "id": "pir", "top": -50, "left": 100, "attrs": {} },
+    { "type": "wokwi-ldr", "id": "ldr", "top": 50, "left": 100, "attrs": {} },
+    { "type": "wokwi-servo", "id": "puerta_servo", "top": 20, "left": 200, "attrs": {} }
+  ],
+  "connections": [
+    ["esp32:D5", "pir:OUT", "green", []],
+    ["esp32:3V3", "pir:VCC", "red", []],
+    ["esp32:GND.1", "pir:GND", "black", []],
+    ["esp32:34", "ldr:AO", "yellow", []],
+    ["esp32:D18", "puerta_servo:PWM", "orange", []]
+  ],
+  "dependencies": {}
+}

@@ -1,0 +1,16 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:unabparking:EnvironmentalNode;1",
+  "@type": "Interface",
+  "displayName": "Nodo Ambiental UNAB",
+  "comment": "Dev06 clima del punto de parqueo y Dev07 calidad de aire del anden. Cada dispositivo real envia el subconjunto de campos que le corresponde.",
+  "contents": [
+    { "@type": "Telemetry", "name": "temp_c", "schema": "double", "unit": "degreeCelsius" },
+    { "@type": "Telemetry", "name": "hr_pct", "schema": "double", "unit": "percent" },
+    { "@type": "Telemetry", "name": "lluvia_mm", "schema": "double", "unit": "millimetre", "comment": "mm acumulados en la ultima hora (tasa mm/h documentada en el texto, no soportada como unidad DTDL)" },
+    { "@type": "Telemetry", "name": "pm25", "schema": "double", "comment": "microgramos por metro cubico (ug/m3); DTDL v2 no tiene unidad estandar para concentracion de masa, se documenta aqui" },
+    { "@type": "Telemetry", "name": "aqi", "schema": "integer" },
+    { "@type": "Property", "name": "origen_envio", "schema": "string", "writable": false },
+    { "@type": "Property", "name": "fuente_dato", "displayName": "Fuente del dato (API/estacion)", "schema": "string", "writable": false }
+  ]
+}

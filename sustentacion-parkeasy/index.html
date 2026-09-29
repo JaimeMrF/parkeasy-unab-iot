@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ParkEasy UNAB — Sustentación</title>
+<meta name="description" content="Sistema IoT de parqueo inteligente — Azure IoT Central, flota heterogénea de 10 orígenes de envío.">
+<style>
+  :root{
+    --bg:#fbfbfa;
+    --bg-soft:#f3f5f4;
+    --surface:#ffffff;
+    --border:#e7e9ec;
+    --text:#0b1220;
+    --text-dim:#616b7a;
+    --accent:#0ea472;
+    --accent-soft:#e6f7f0;
+    --accent-2:#0284c7;
+    --accent-3:#9333ea;
+    --accent-4:#d97706;
+    --accent-5:#e11d48;
+    --radius:22px;
+    --maxw:1220px;
+    --shadow-lg:0 40px 80px -40px rgba(15,23,42,0.18);
+    --shadow-md:0 20px 40px -24px rgba(15,23,42,0.14);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    line-height:1.6;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--accent); color:#fff;}
+  a{color:inherit;}
+
+  body::before{
+    content:'';
+    position:fixed; inset:0;
+    background-image: radial-gradient(circle at 1px 1px, rgba(15,23,42,0.05) 1px, transparent 0);
+    background-size:34px 34px;
+    mask-image:radial-gradient(ellipse 70% 50% at 50% 0%, black 30%, transparent 90%);
+    pointer-events:none; z-index:0;
+  }
+
+  .progress{position:fixed; top:0; left:0; height:3px; background:linear-gradient(90deg,var(--accent),var(--accent-2)); width:0%; z-index:1000; transition:width .1s linear;}
+
+  nav{
+    position:fixed; top:0; left:0; right:0; z-index:900;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 5vw;
+    backdrop-filter:blur(16px);
+    background:rgba(251,251,250,0.75);
+    border-bottom:1px solid var(--border);
+  }
+  nav .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:-0.02em; font-size:1.05rem;}
+  nav .brand .dot{width:10px;height:10px;border-radius:50%;background:var(--accent); box-shadow:0 0 0 4px var(--accent-soft);}
+  nav .links{display:flex; gap:26px; font-size:.85rem; color:var(--text-dim); font-weight:500;}
+  nav .links a{text-decoration:none; transition:color .2s;}
+  nav .links a:hover{color:var(--text);}
+  @media (max-width:800px){ nav .links{display:none;} }
+
+  section{position:relative; z-index:1; max-width:var(--maxw); margin:0 auto; padding:110px 6vw 30px;}
+
+  .reveal{opacity:0; transform:translateY(26px); transition:opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1);}
+  .reveal.in{opacity:1; transform:translateY(0);}
+
+  /* ---------- HERO with 3D canvas ---------- */
+  #hero{
+    min-height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center;
+    text-align:center; padding-top:90px; position:relative;
+  }
+  #hero-canvas{position:absolute; inset:0; z-index:0; cursor:grab;}
+  #hero-canvas:active{cursor:grabbing;}
+  #hero::after{
+    content:''; position:absolute; inset:0; z-index:1; pointer-events:none;
+    background:radial-gradient(ellipse 70% 55% at 50% 34%, var(--bg) 0%, rgba(251,251,250,0.94) 45%, rgba(251,251,250,0) 75%);
+  }
+  .hero-content{position:relative; z-index:2; pointer-events:none;}
+  .hero-content .btn, .hero-content a{pointer-events:auto;}
+
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px; font-size:.76rem; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--accent); border:1px solid #cdeee1; background:var(--accent-soft);
+    padding:7px 16px; border-radius:999px; margin-bottom:26px; font-weight:600;
+  }
+  .eyebrow .pulse{width:7px;height:7px;border-radius:50%;background:var(--accent); animation:pulse 1.6s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;} 50%{opacity:.4;}}
+
+  h1.hero-title{font-size:clamp(2.4rem,6.6vw,5.2rem); font-weight:800; letter-spacing:-0.035em; line-height:1.03; color:var(--text);}
+  h1.hero-title .accent{color:var(--accent);}
+  .hero-sub{max-width:600px; margin:24px auto 0; color:var(--text-dim); font-size:1.1rem;}
+  .hero-ctas{display:flex; gap:14px; margin-top:38px; flex-wrap:wrap; justify-content:center;}
+  .btn{padding:14px 26px; border-radius:14px; font-weight:600; font-size:.92rem; text-decoration:none; display:inline-flex; align-items:center; gap:8px; transition:transform .2s, box-shadow .2s; border:1px solid transparent;}
+  .btn-primary{background:var(--text); color:#fff; box-shadow:0 14px 30px -10px rgba(11,18,32,.35);}
+  .btn-ghost{border:1px solid var(--border); color:var(--text); background:rgba(255,255,255,.7);}
+  .btn:hover{transform:translateY(-2px);}
+  .hero-hint{margin-top:56px; font-size:.75rem; color:var(--text-dim); display:flex; align-items:center; gap:8px;}
+
+  /* ---------- SECTION HEADERS ---------- */
+  .sec-label{color:var(--accent); font-size:.76rem; letter-spacing:.14em; text-transform:uppercase; font-weight:700; margin-bottom:10px;}
+  .sec-title{font-size:clamp(1.7rem,3.6vw,2.5rem); font-weight:800; letter-spacing:-0.025em; margin-bottom:14px;}
+  .sec-desc{color:var(--text-dim); max-width:660px; font-size:1rem; margin-bottom:44px;}
+
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow-md);}
+
+  /* STATS */
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px;}
+  .stat-card{padding:28px 24px;}
+  .stat-num{font-size:2.5rem; font-weight:800; letter-spacing:-0.02em; color:var(--accent);}
+  .stat-label{color:var(--text-dim); font-size:.86rem; margin-top:6px;}
+
+  /* ARCHITECTURE SIMULATION */
+  #sim-wrap{position:relative; border-radius:var(--radius); overflow:hidden; border:1px solid var(--border); background:linear-gradient(180deg,#fff,#f7f9f8); box-shadow:var(--shadow-lg);}
+  #sim-canvas{display:block; width:100%; height:460px;}
+  .sim-legend{display:flex; flex-wrap:wrap; gap:10px; padding:18px 22px; border-top:1px solid var(--border); background:#fff;}
+  .sim-legend span{display:flex; align-items:center; gap:6px; font-size:.75rem; color:var(--text-dim);}
+  .sim-legend i{width:9px;height:9px;border-radius:50%; display:inline-block;}
+
+  /* CATALOG */
+  .cat-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:16px;}
+  .cat-card{
+    position:relative; padding:22px; overflow:hidden; will-change:transform; transform-style:preserve-3d;
+    transition:box-shadow .25s;
+  }
+  .cat-card:hover{box-shadow:var(--shadow-lg);}
+  .cat-card::before{content:''; position:absolute; top:0; left:0; right:0; height:4px; background:var(--card-color); border-radius:4px 4px 0 0;}
+  .cat-id{font-size:.7rem; color:var(--text-dim); letter-spacing:.08em; margin-bottom:8px; font-weight:600;}
+  .cat-name{font-weight:700; font-size:1.02rem; margin-bottom:10px;}
+  .cat-origin{display:inline-block; font-size:.7rem; padding:4px 10px; border-radius:999px; margin-bottom:14px; font-weight:700; background:var(--dot-bg); color:var(--card-color);}
+  .cat-meta{font-size:.76rem; color:var(--text-dim); display:flex; flex-direction:column; gap:4px;}
+  .cat-meta b{color:var(--text); font-weight:600;}
+
+  /* DASHBOARD - browser mockup */
+  .browser-frame{border-radius:16px; overflow:hidden; border:1px solid var(--border); margin-bottom:22px; box-shadow:var(--shadow-lg); background:#fff; transform-style:preserve-3d; will-change:transform;}
+  .browser-bar{display:flex; align-items:center; gap:6px; padding:11px 14px; background:#f4f5f6; border-bottom:1px solid var(--border);}
+  .browser-bar i{width:10px;height:10px;border-radius:50%;}
+  .browser-frame img{width:100%; display:block;}
+  .kpi-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin-top:26px;}
+  .kpi{padding:18px; text-align:center;}
+  .kpi .v{font-size:1.65rem; font-weight:800; color:var(--accent);}
+  .kpi .l{font-size:.74rem; color:var(--text-dim); margin-top:4px;}
+
+  /* RULES */
+  .rule-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px;}
+  .rule-card{padding:24px;}
+  .rule-icon{width:42px;height:42px;border-radius:12px; display:flex;align-items:center;justify-content:center; font-size:1.25rem; margin-bottom:16px;}
+  .rule-card h4{font-size:1.02rem; margin-bottom:8px;}
+  .rule-card p{color:var(--text-dim); font-size:.84rem;}
+  .rule-card .cond{margin-top:12px; font-family:'SF Mono','Courier New',monospace; font-size:.76rem; background:var(--bg-soft); padding:8px 12px; border-radius:8px; color:var(--accent-2); border:1px solid var(--border);}
+
+  /* TIMELINE */
+  .timeline{position:relative; padding-left:30px; border-left:2px solid var(--border);}
+  .tl-item{position:relative; margin-bottom:26px;}
+  .tl-item::before{content:''; position:absolute; left:-37px; top:4px; width:12px; height:12px; border-radius:50%; background:var(--dot,var(--accent)); box-shadow:0 0 0 5px color-mix(in srgb, var(--dot,var(--accent)) 15%, transparent);}
+  .tl-time{font-size:.74rem; color:var(--text-dim); letter-spacing:.05em; font-weight:600;}
+  .tl-title{font-weight:700; margin:4px 0; font-size:1rem;}
+  .tl-desc{color:var(--text-dim); font-size:.86rem;}
+
+  /* TEAM */
+  .team-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:18px;}
+  .team-card{padding:26px; display:flex; gap:16px; align-items:center;}
+  .avatar{width:52px;height:52px;border-radius:50%; display:flex;align-items:center;justify-content:center; font-weight:800; font-size:1.1rem; color:#fff; flex-shrink:0;}
+  .team-card h4{font-size:1rem;}
+  .team-card span{color:var(--text-dim); font-size:.8rem;}
+
+  footer{text-align:center; padding:60px 6vw 100px; color:var(--text-dim); font-size:.85rem; position:relative; z-index:1;}
+  footer .brand{color:var(--text); font-weight:700; margin-bottom:6px;}
+
+  @media(max-width:720px){ #sim-canvas{height:640px;} }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<nav>
+  <div class="brand"><span class="dot"></span> ParkEasy <span style="color:var(--accent)">UNAB</span></div>
+  <div class="links">
+    <a href="#arquitectura">Simulación</a>
+    <a href="#catalogo">Catálogo</a>
+    <a href="#panel">Control Room</a>
+    <a href="#reglas">Reglas</a>
+    <a href="#evidencia">Evidencia</a>
+    <a href="#equipo">Equipo</a>
+  </div>
+</nav>
+
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-content">
+    <div class="eyebrow"><span class="pulse"></span> Azure IoT Central · Parcial 1 · 2026-II</div>
+    <h1 class="hero-title">La flota heterogénea<br>de <span class="accent">10 orígenes</span><br>orbitando un mismo catálogo.</h1>
+    <p class="hero-sub">Arrastra la escena. Cada nodo es un dispositivo real enviando datos a Azure IoT Central en este momento.</p>
+    <div class="hero-ctas">
+      <a href="#arquitectura" class="btn btn-primary">Ver la simulación ↓</a>
+      <a href="#panel" class="btn btn-ghost">Ir al Control Room</a>
+    </div>
+    <div class="hero-hint">🖱️ Arrastra para rotar · se mueve solo si la sueltas</div>
+  </div>
+</section>
+
+<section id="problema">
+  <div class="sec-label reveal">01 · El reto</div>
+  <h2 class="sec-title reveal">Una universidad, un parqueadero, cero visibilidad.</h2>
+  <p class="sec-desc reveal">UNAB necesita saber en tiempo real si hay cupos, si un candado quedó abierto, si un punto de carga se recalienta o si el aire del andén es seguro para respirar. La respuesta no puede depender de un solo sensor: necesita una flota real, asíncrona y resiliente a fallos de red.</p>
+  <div class="stat-grid reveal">
+    <div class="stat-card card"><div class="stat-num" data-count="10">0</div><div class="stat-label">dispositivos, 10 orígenes de envío distintos</div></div>
+    <div class="stat-card card"><div class="stat-num" data-count="6">0</div><div class="stat-label">Device Templates DTDL v2 publicados</div></div>
+    <div class="stat-card card"><div class="stat-num">15s–5m</div><div class="stat-label">rango real de intervalos de muestreo</div></div>
+    <div class="stat-card card"><div class="stat-num" data-count="3">0</div><div class="stat-label">Rules activas con alerta por correo</div></div>
+  </div>
+</section>
+
+<section id="arquitectura">
+  <div class="sec-label reveal">02 · Simulación en vivo</div>
+  <h2 class="sec-title reveal">Así viaja un paquete: dispositivo → red → nube → decisión.</h2>
+  <p class="sec-desc reveal">Cada punto es un mensaje real subiendo por las cuatro capas de la arquitectura, en bucle continuo.</p>
+  <div class="reveal" id="sim-wrap">
+    <canvas id="sim-canvas"></canvas>
+    <div class="sim-legend" id="simLegend"></div>
+  </div>
+</section>
+
+<section id="catalogo">
+  <div class="sec-label reveal">03 · Catálogo de dispositivos</div>
+  <h2 class="sec-title reveal">Diez filas. Diez formas distintas de hablarle a la nube.</h2>
+  <p class="sec-desc reveal">Ningún dispositivo repite protocolo, librería o feed. Eso es lo que hace la flota heterogénea de verdad.</p>
+  <div class="cat-grid" id="catGrid"></div>
+</section>
+
+<section id="panel">
+  <div class="sec-label reveal">04 · Control Room</div>
+  <h2 class="sec-title reveal">Un dashboard que un operador sin código puede leer.</h2>
+  <p class="sec-desc reveal">Logo, mapa de zonas, KPIs en vivo y cuatro gráficos con datos reales — capturados directamente de la aplicación en producción.</p>
+  <div class="reveal">
+    <div class="browser-frame tilt">
+      <div class="browser-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+      <img src="assets/dashboard_control_room.jpg" alt="Control Room ParkEasy UNAB - parte superior">
+    </div>
+    <div class="browser-frame tilt">
+      <div class="browser-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+      <img src="assets/dashboard_control_room_2.jpg" alt="Control Room ParkEasy UNAB - parte inferior">
+    </div>
+  </div>
+  <div class="kpi-row reveal">
+    <div class="kpi card"><div class="v">4</div><div class="l">Cupos libres (en vivo)</div></div>
+    <div class="kpi card"><div class="v">13.3</div><div class="l">PM2.5 µg/m³ (Open-Meteo real)</div></div>
+    <div class="kpi card"><div class="v">24.9°C</div><div class="l">Temp. máx. conector</div></div>
+    <div class="kpi card"><div class="v">8/10</div><div class="l">Dispositivos conectados ahora</div></div>
+  </div>
+</section>
+
+<section id="reglas">
+  <div class="sec-label reveal">05 · Reglas de negocio</div>
+  <h2 class="sec-title reveal">La plataforma decide, no solo mide.</h2>
+  <div class="rule-grid" id="ruleGrid"></div>
+</section>
+
+<section id="evidencia">
+  <div class="sec-label reveal">06 · Asincronía y desconexión real</div>
+  <h2 class="sec-title reveal">No lo simulamos: lo capturamos ocurriendo.</h2>
+  <p class="sec-desc reveal">Estos eventos vienen directo del log "Datos sin procesar" de IoT Central, sin edición.</p>
+  <div class="timeline reveal" id="timeline"></div>
+</section>
+
+<section id="equipo">
+  <div class="sec-label reveal">07 · Equipo</div>
+  <h2 class="sec-title reveal">Quiénes lo construyeron.</h2>
+  <div class="team-grid reveal">
+    <div class="team-card card">
+      <div class="avatar" style="background:linear-gradient(135deg,var(--accent),var(--accent-2));">JV</div>
+      <div><h4>Jaime Alejandro Vega Barbosa</h4><span>U00178766</span></div>
+    </div>
+    <div class="team-card card">
+      <div class="avatar" style="background:linear-gradient(135deg,var(--accent-3),var(--accent-5));">JJ</div>
+      <div><h4>Juan Sebastián Jiménez Daza</h4><span>U00177874</span></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="brand">ParkEasy UNAB</div>
+  Universidad Autónoma de Bucaramanga · IoT + Cloud + Sistemas Distribuidos · Parcial 1 · 2026-II
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<script>
+const DEVICE_COLORS = ['#0ea472','#d97706','#0284c7','#e11d48','#9333ea','#0891b2','#059669','#ca8a04','#db2777','#16a34a'];
+
+const devices = [
+  {id:'dev01', name:'Slot 1 — Seguro y ocupación', origin:'Digital Twin nativo', color:DEVICE_COLORS[0], proto:'MQTT interno', interval:'60 s', vars:'lock_state, ocupado, temp_slot'},
+  {id:'dev02', name:'Slot 2 — Carga', origin:'MQTT explícito (paho)', color:DEVICE_COLORS[1], proto:'MQTT/TLS 8883', interval:'60 s', vars:'estado_carga, corriente_a'},
+  {id:'dev03', name:'Slot 3 — Seguro y ocupación', origin:'Python (azure-iot-device)', color:DEVICE_COLORS[2], proto:'MQTT/TLS 8883', interval:'15 s', vars:'lock_state, ocupado, lux'},
+  {id:'dev04', name:'Slot 4 — Carga rápida', origin:'Wokwi ESP32', color:DEVICE_COLORS[3], proto:'MQTT/TLS 8883', interval:'15 s', vars:'soc_estimado, temp_conector'},
+  {id:'dev05', name:'Tótem de estación', origin:'Puente HTTP/REST', color:DEVICE_COLORS[4], proto:'HTTPS → MQTT', interval:'evento + 30 s', vars:'cupos_libres, lock_maestro'},
+  {id:'dev06', name:'Clima del punto', origin:'API pública (Open-Meteo)', color:DEVICE_COLORS[5], proto:'HTTPS → MQTT', interval:'5 min', vars:'temp_c, hr_pct, lluvia_mm'},
+  {id:'dev07', name:'Calidad de aire', origin:'Open-Meteo Air Quality', color:DEVICE_COLORS[6], proto:'HTTPS → MQTT', interval:'60 s', vars:'pm25, aqi'},
+  {id:'dev08', name:'Tablero de energía', origin:'Replay CSV histórico', color:DEVICE_COLORS[7], proto:'MQTT/TLS 8883', interval:'45 s', vars:'kwh, estado_breaker'},
+  {id:'dev09', name:'Perímetro / evento', origin:'Wokwi ESP32 #2', color:DEVICE_COLORS[8], proto:'MQTT/TLS 8883', interval:'60 s', vars:'movimiento, lux_nocturno'},
+  {id:'dev10', name:'Pasarela de sesión', origin:'MQTT sobre WebSockets', color:DEVICE_COLORS[9], proto:'MQTT-WS/TLS 443', interval:'20 s', vars:'sesion_activa, ack'},
+];
+
+// ---------------- CATALOG ----------------
+const catGrid = document.getElementById('catGrid');
+devices.forEach(d=>{
+  const card = document.createElement('div');
+  card.className = 'cat-card card reveal tilt';
+  card.style.setProperty('--card-color', d.color);
+  card.style.setProperty('--dot-bg', d.color + '1a');
+  card.innerHTML = `
+    <div class="cat-id">${d.id.toUpperCase()}</div>
+    <div class="cat-name">${d.name}</div>
+    <div class="cat-origin">${d.origin}</div>
+    <div class="cat-meta">
+      <div><b>Protocolo:</b> ${d.proto}</div>
+      <div><b>Intervalo:</b> ${d.interval}</div>
+      <div><b>Variables:</b> ${d.vars}</div>
+    </div>`;
+  catGrid.appendChild(card);
+});
+
+// ---------------- RULES ----------------
+const rules = [
+  {icon:'🅿️', color:'#0ea472', title:'Ocupación alta', desc:'Notifica cuando la estación se llena, para redirigir usuarios a otro punto.', cond:'cupos_libres < 1'},
+  {icon:'🌡️', color:'#e11d48', title:'Sobretemperatura de carga', desc:'Detecta riesgo térmico en el conector antes de que sea una falla.', cond:'temp_conector > 45'},
+  {icon:'🌫️', color:'#0284c7', title:'Calidad de aire crítica', desc:'Alerta si el aire del andén se vuelve dañino para ciclistas.', cond:'aqi > 100'},
+];
+const ruleGrid = document.getElementById('ruleGrid');
+rules.forEach(r=>{
+  const div = document.createElement('div');
+  div.className = 'rule-card card reveal';
+  div.innerHTML = `
+    <div class="rule-icon" style="background:${r.color}1a;">${r.icon}</div>
+    <h4>${r.title}</h4>
+    <p>${r.desc}</p>
+    <div class="cond">${r.cond}</div>`;
+  ruleGrid.appendChild(div);
+});
+
+// ---------------- TIMELINE ----------------
+const timelineData = [
+  {time:'19:50:26 → 19:51:06', dot:'#e11d48', title:'dev06-clima se desconecta', desc:'Corte real durante el reinicio de los procesos de la flota. IoT Central registra "Dispositivo desconectado" de forma nativa.'},
+  {time:'19:51:06', dot:'#0ea472', title:'Reconexión automática', desc:'El script de Python vuelve a registrar el dispositivo vía DPS y retoma el envío cada 5 minutos, sin intervención manual.'},
+  {time:'20:00:05', dot:'#0284c7', title:'dev03-slot3 sigue en vivo', desc:'15 segundos de intervalo sostenidos durante toda la ventana — evidencia de asincronía real frente a los 5 min de dev06.'},
+];
+const tl = document.getElementById('timeline');
+timelineData.forEach(t=>{
+  const div = document.createElement('div');
+  div.className = 'tl-item';
+  div.style.setProperty('--dot', t.dot);
+  div.innerHTML = `<div class="tl-time">${t.time}</div><div class="tl-title">${t.title}</div><div class="tl-desc">${t.desc}</div>`;
+  tl.appendChild(div);
+});
+
+// ---------------- scroll progress + reveal ----------------
+const progress = document.getElementById('progress');
+window.addEventListener('scroll', ()=>{
+  const h = document.documentElement;
+  const pct = (h.scrollTop) / (h.scrollHeight - h.clientHeight) * 100;
+  progress.style.width = pct + '%';
+});
+const obs = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); obs.unobserve(e.target);} });
+}, {threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// ---------------- counters ----------------
+document.querySelectorAll('[data-count]').forEach(el=>{
+  const target = parseInt(el.dataset.count, 10);
+  const counterObs = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        let cur = 0;
+        const step = Math.max(1, Math.round(target/30));
+        const t = setInterval(()=>{
+          cur += step;
+          if(cur >= target){ cur = target; clearInterval(t); }
+          el.textContent = cur;
+        }, 30);
+        counterObs.unobserve(el);
+      }
+    });
+  }, {threshold:.5});
+  counterObs.observe(el);
+});
+
+// ---------------- 3D tilt effect ----------------
+document.querySelectorAll('.tilt').forEach(card=>{
+  card.addEventListener('mousemove', (e)=>{
+    const r = card.getBoundingClientRect();
+    const x = (e.clientX - r.left)/r.width - 0.5;
+    const y = (e.clientY - r.top)/r.height - 0.5;
+    card.style.transform = `perspective(900px) rotateY(${x*8}deg) rotateX(${-y*8}deg) translateY(-4px)`;
+  });
+  card.addEventListener('mouseleave', ()=>{ card.style.transform = 'perspective(900px) rotateY(0) rotateX(0)'; });
+});
+
+// ================= THREE.JS HERO SCENE =================
+(function(){
+  const canvas = document.getElementById('hero-canvas');
+  const heroSection = document.getElementById('hero');
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(48, 1, 0.1, 100);
+  camera.position.set(0, 1.2, 11);
+
+  function resize(){
+    const w = heroSection.clientWidth, h = heroSection.clientHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w/h; camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize', resize);
+
+  // lights
+  scene.add(new THREE.AmbientLight(0xffffff, 0.9));
+  const dl = new THREE.DirectionalLight(0xffffff, 0.8); dl.position.set(4,6,4); scene.add(dl);
+  const pl = new THREE.PointLight(0x0ea472, 1.4, 20); pl.position.set(0,3,0); scene.add(pl);
+
+  const group = new THREE.Group();
+  scene.add(group);
+
+  // central "cloud" (IoT Central)
+  const cloudGeo = new THREE.IcosahedronGeometry(1.15, 1);
+  const cloudMat = new THREE.MeshStandardMaterial({color:0xffffff, roughness:0.15, metalness:0.05, emissive:0x0ea472, emissiveIntensity:0.15});
+  const cloud = new THREE.Mesh(cloudGeo, cloudMat);
+  cloud.position.y = 0.4;
+  group.add(cloud);
+
+  // wireframe overlay for cloud
+  const wire = new THREE.Mesh(cloudGeo, new THREE.MeshBasicMaterial({color:0x0ea472, wireframe:true, transparent:true, opacity:0.35}));
+  wire.position.copy(cloud.position);
+  group.add(wire);
+
+  // base ring (parking station)
+  const ringGeo = new THREE.TorusGeometry(3.4, 0.045, 16, 100);
+  const ringMat = new THREE.MeshStandardMaterial({color:0xd7dbe0, roughness:0.5, metalness:0.2});
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = Math.PI/2;
+  ring.position.y = -2.6;
+  group.add(ring);
+
+  // device nodes around the ring
+  const nodeMeshes = [];
+  const N = devices.length;
+  for(let i=0;i<N;i++){
+    const angle = (i/N) * Math.PI * 2;
+    const radius = 3.4;
+    const x = Math.cos(angle)*radius;
+    const z = Math.sin(angle)*radius;
+    const y = -2.6;
+
+    const color = new THREE.Color(devices[i].color);
+    const geo = new THREE.SphereGeometry(0.16, 24, 24);
+    const mat = new THREE.MeshStandardMaterial({color, emissive:color, emissiveIntensity:0.5, roughness:0.3, metalness:0.1});
+    const node = new THREE.Mesh(geo, mat);
+    node.position.set(x,y,z);
+    group.add(node);
+
+    // small pedestal line down to ring plane (visual anchor)
+    const pedGeo = new THREE.CylinderGeometry(0.02,0.02,0.001,8);
+    // connecting line node -> cloud
+    const points = [];
+    const start = new THREE.Vector3(x,y,z);
+    const end = cloud.position.clone();
+    for(let t=0;t<=1;t+=0.05){
+      const p = start.clone().lerp(end, t);
+      p.y += Math.sin(t*Math.PI) * 0.6; // arc
+      points.push(p);
+    }
+    const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+    const lineMat = new THREE.LineBasicMaterial({color, transparent:true, opacity:0.35});
+    const line = new THREE.Line(lineGeo, lineMat);
+    group.add(line);
+
+    // traveling particle
+    const partGeo = new THREE.SphereGeometry(0.06, 12, 12);
+    const partMat = new THREE.MeshBasicMaterial({color});
+    const particle = new THREE.Mesh(partGeo, partMat);
+    group.add(particle);
+
+    nodeMeshes.push({node, particle, start, end, offset: Math.random(), speed: 0.25 + Math.random()*0.25});
+  }
+
+  // drag to rotate
+  let isDragging = false, prevX = 0, prevY = 0, rotY = 0.4, rotX = 0.15, autoSpin = true;
+  let velY = 0;
+  canvas.addEventListener('pointerdown', (e)=>{ isDragging = true; autoSpin = false; prevX = e.clientX; prevY = e.clientY; });
+  window.addEventListener('pointerup', ()=>{ isDragging = false; setTimeout(()=>autoSpin=true, 2200); });
+  window.addEventListener('pointermove', (e)=>{
+    if(!isDragging) return;
+    const dx = e.clientX - prevX, dy = e.clientY - prevY;
+    velY = dx * 0.005;
+    rotY += velY;
+    rotX = Math.max(-0.6, Math.min(0.6, rotX + dy*0.003));
+    prevX = e.clientX; prevY = e.clientY;
+  });
+
+  const clock = new THREE.Clock();
+  function animate(){
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+
+    if(autoSpin) rotY += 0.0022 + velY*0;
+    velY *= 0.9;
+    group.rotation.y = rotY;
+    group.rotation.x = rotX;
+
+    cloud.position.y = 0.4 + Math.sin(t*0.8)*0.12;
+    wire.position.y = cloud.position.y;
+    wire.rotation.y = t*0.3;
+    cloud.rotation.y = t*0.15;
+
+    nodeMeshes.forEach(nm=>{
+      const tt = ( (t*nm.speed) + nm.offset ) % 1;
+      const p = nm.start.clone().lerp(new THREE.Vector3(nm.end.x, cloud.position.y, nm.end.z), tt);
+      p.y += Math.sin(tt*Math.PI) * 0.6;
+      nm.particle.position.copy(p);
+      nm.node.scale.setScalar(1 + Math.sin(t*2 + nm.offset*10)*0.08);
+    });
+
+    renderer.render(scene, camera);
+  }
+  resize();
+  animate();
+})();
+
+// ================= ARCHITECTURE SIMULATION (canvas 2D) =================
+(function(){
+  const canvas = document.getElementById('sim-canvas');
+  const ctx = canvas.getContext('2d');
+  const wrap = document.getElementById('sim-wrap');
+
+  const layers = [
+    {label:'Dispositivo', color:'#0ea472'},
+    {label:'Red / TLS', color:'#0284c7'},
+    {label:'Plataforma (Azure)', color:'#d97706'},
+    {label:'Operación', color:'#9333ea'},
+  ];
+  const legend = document.getElementById('simLegend');
+  layers.forEach(l=>{
+    const s = document.createElement('span');
+    s.innerHTML = `<i style="background:${l.color}"></i> ${l.label}`;
+    legend.appendChild(s);
+  });
+
+  let W,H, DPR;
+  function resize(){
+    DPR = Math.min(window.devicePixelRatio,2);
+    W = canvas.clientWidth; H = canvas.clientHeight;
+    canvas.width = W*DPR; canvas.height = H*DPR;
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+  }
+  window.addEventListener('resize', resize);
+
+  const cols = 10;
+  const particles = [];
+  for(let i=0;i<cols;i++){
+    particles.push({
+      x: (i+0.5)/cols,
+      speed: 0.15 + Math.random()*0.12,
+      offset: Math.random(),
+      color: DEVICE_COLORS[i % DEVICE_COLORS.length],
+      wob: Math.random()*Math.PI*2,
+    });
+  }
+
+  function bandY(i, n){ return (i+0.5)/n; }
+
+  let raf;
+  function draw(t){
+    ctx.clearRect(0,0,W,H);
+    const bandH = H/4;
+
+    // bands
+    layers.forEach((l,i)=>{
+      const y0 = i*bandH;
+      ctx.fillStyle = i%2===0 ? 'rgba(15,23,42,0.015)' : 'rgba(15,23,42,0.03)';
+      ctx.fillRect(0,y0,W,bandH);
+      ctx.fillStyle = '#616b7a';
+      ctx.font = '600 12px Inter, sans-serif';
+      ctx.fillText(l.label.toUpperCase(), 16, y0+20);
+      ctx.strokeStyle = 'rgba(15,23,42,0.06)';
+      ctx.beginPath(); ctx.moveTo(0,y0); ctx.lineTo(W,y0); ctx.stroke();
+    });
+
+    // vertical connector lines per column
+    for(let i=0;i<cols;i++){
+      const x = (i+0.5)/cols * W;
+      ctx.strokeStyle = 'rgba(15,23,42,0.05)';
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+
+    // particles flowing down through the 4 bands, looping
+    particles.forEach(p=>{
+      const cycle = ((t*0.001*p.speed) + p.offset) % 1;
+      const y = cycle * H;
+      const wobble = Math.sin(t*0.002 + p.wob) * 6;
+      const x = p.x*W + wobble;
+
+      // trail
+      const grad = ctx.createLinearGradient(x, y-40, x, y);
+      grad.addColorStop(0, 'rgba(0,0,0,0)');
+      grad.addColorStop(1, p.color);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(x, Math.max(0,y-40)); ctx.lineTo(x,y); ctx.stroke();
+
+      ctx.beginPath();
+      ctx.fillStyle = p.color;
+      ctx.arc(x, y, 4.5, 0, Math.PI*2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.fillStyle = p.color + '33';
+      ctx.arc(x, y, 9, 0, Math.PI*2);
+      ctx.fill();
+    });
+
+    raf = requestAnimationFrame(draw);
+  }
+  resize();
+  raf = requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

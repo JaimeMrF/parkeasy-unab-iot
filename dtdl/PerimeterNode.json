@@ -1,0 +1,13 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:unabparking:PerimeterNode;1",
+  "@type": "Interface",
+  "displayName": "Nodo de Perimetro UNAB",
+  "comment": "Dev09: perimetro / evento nocturno de la estacion.",
+  "contents": [
+    { "@type": "Telemetry", "name": "movimiento", "schema": "boolean" },
+    { "@type": "Telemetry", "name": "lux_nocturno", "schema": "double", "unit": "lux" },
+    { "@type": "Telemetry", "name": "puerta", "schema": "string", "comment": "open | closed" },
+    { "@type": "Property", "name": "origen_envio", "schema": "string", "writable": false }
+  ]
+}

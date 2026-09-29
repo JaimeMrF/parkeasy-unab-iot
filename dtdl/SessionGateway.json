@@ -1,0 +1,13 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:unabparking:SessionGateway;1",
+  "@type": "Interface",
+  "displayName": "Pasarela de Sesion UNAB",
+  "comment": "Dev10: pasarela que registra sesiones anonimas de uso de un slot.",
+  "contents": [
+    { "@type": "Telemetry", "name": "sesion_activa", "schema": "boolean" },
+    { "@type": "Telemetry", "name": "usuario_anonimo", "schema": "string" },
+    { "@type": "Telemetry", "name": "ack", "schema": "boolean" },
+    { "@type": "Property", "name": "origen_envio", "schema": "string", "writable": false }
+  ]
+}

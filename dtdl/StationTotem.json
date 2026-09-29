@@ -1,0 +1,18 @@
+{
+  "@context": "dtmi:dtdl:context;2",
+  "@id": "dtmi:unabparking:StationTotem;1",
+  "@type": "Interface",
+  "displayName": "Totem de Estacion UNAB",
+  "comment": "Dev05: totem agregador de la estacion completa.",
+  "contents": [
+    { "@type": "Telemetry", "name": "cupos_libres", "schema": "integer" },
+    { "@type": "Telemetry", "name": "cupos_totales", "schema": "integer" },
+    { "@type": "Telemetry", "name": "lock_maestro", "schema": "string", "comment": "armed | disarmed" },
+    { "@type": "Property", "name": "origen_envio", "schema": "string", "writable": false },
+    {
+      "@type": "Command",
+      "name": "armarLockMaestro",
+      "request": { "name": "estado", "schema": "string" }
+    }
+  ]
+}

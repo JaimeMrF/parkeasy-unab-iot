@@ -1,0 +1,10 @@
+scheduler/devices.env.csv
+.env
+__pycache__/
+*.pyc
+
+node_modules/
+dist/
+.pio/
+*.log
+~$*
