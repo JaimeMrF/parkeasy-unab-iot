@@ -149,3 +149,17 @@ proyecto-parqueadero-unab/
 ```
 
 Credenciales solo por variable de entorno (`IOTC_ID_SCOPE`, `IOTC_DEVICE_ID`, `IOTC_DEVICE_KEY`). `scheduler/devices.env.csv` con claves reales debe quedar en `.gitignore` y nunca subirse al repositorio público.
+
+Repositorio en GitHub: https://github.com/JaimeMrF/parkeasy-unab-iot
+
+---
+
+## 9. Sitio web de sustentación
+
+Como apoyo a la sustentación se construyó un sitio web (React + Vite, carpeta `sustentacion-app/`) que presenta el proyecto de forma visual e interactiva. Los datos oficiales están en IoT Central; el sitio es una guía didáctica.
+
+![Inicio](assets/capturas/sitio_inicio.jpg)
+![Arquitectura interactiva](assets/capturas/sitio_arquitectura.jpg)
+![Parqueadero 3D](assets/capturas/sitio_parqueadero3d.jpg)
+![Control Room](assets/capturas/sitio_controlroom.jpg)
+![Simulador de reglas](assets/capturas/sitio_reglas.jpg)
