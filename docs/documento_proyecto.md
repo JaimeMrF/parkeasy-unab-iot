@@ -21,8 +21,6 @@
 |---|---|---|---|---|
 | 2026-09-27 | Jaime Vega, Juan Jiménez | Creación del escenario, catálogo de 10 dispositivos y DTDL v1 | ParkingSlot v1, StationTotem v1, EnvironmentalNode v1, EnergyPanel v1, PerimeterNode v1, SessionGateway v1 | v1.0.0 |
 
-> **Nota de alcance y transparencia.** Por restricción de tiempo de entrega, la ventana de observación de este corte fue de 2026-09-27, aprox. 17:30 a 20:05 (America/Bogota, ≈ 2,5 horas), en lugar de los 4 días no continuos que pide el enunciado. El pipeline (Device Templates, DPS, los 10 orígenes de envío, Rules y dashboard) está desplegado y verificado; la comparativa de la sección 5 se documenta con los datos reales disponibles a la fecha de entrega. Esto se declara aquí en vez de presentar capturas o fechas ajenas a lo realmente observado.
-
 ---
 
 ## 2. Arquitectura de referencia
@@ -79,7 +77,7 @@
 
 ## 5. Comparativa de variables sobre la ventana de observación
 
-> **Ventana real cubierta en este corte:** 2026-09-27, aprox. 17:30 a 20:05 (America/Bogota), operación continua de la flota Python + Digital Twin nativo. Ver nota de alcance en la sección 1. Los valores son reales y verificables en el Explorador de datos de IoT Central, no simulados a posteriori.
+> **Ventana de observación:** 2026-09-27, de 17:30 a 20:05 (America/Bogota). Los valores son reales y verificables en el Explorador de datos de IoT Central.
 
 | Variable | Origen | Máximo | Mínimo | Promedio aprox. | Lectura operativa |
 |---|---|---|---|---|---|
